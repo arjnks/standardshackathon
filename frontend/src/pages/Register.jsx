@@ -1,0 +1,138 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
+function Register() {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    category: 'mech',
+    team_name: '',
+    team_leader: '',
+    reg_no: ''
+  });
+  
+  const [teammates, setTeammates] = useState([{ name: '', reg_no: '', school: '' }, { name: '', reg_no: '', school: '' }]);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleFormChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleTeammateChange = (index, field, value) => {
+    const newTeammates = [...teammates];
+    newTeammates[index][field] = value;
+    setTeammates(newTeammates);
+  };
+
+  const addTeammate = () => {
+    if (teammates.length < 4) { // Max 5 total members (1 leader + 4 teammates)
+      setTeammates([...teammates, { name: '', reg_no: '', school: '' }]);
+    }
+  };
+
+  const removeTeammate = (index) => {
+    const newTeammates = teammates.filter((_, i) => i !== index);
+    setTeammates(newTeammates);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    
+    // Validation
+    const totalMembers = 1 + teammates.filter(t => t.name.trim() !== '').length;
+    if (totalMembers < 3 || totalMembers > 5) {
+      setError('Team size must be between 3 and 5 members.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/teams`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          teammates: teammates.filter(t => t.name.trim() !== '')
+        })
+      });
+
+      if (!res.ok) {
+        throw new Error('Registration failed');
+      }
+
+      alert('Team registered successfully!');
+      navigate('/');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="card" style={{ maxWidth: '800px', margin: '2rem auto' }}>
+      <h2 className="mb-4 mono text-center">TEAM REGISTRATION</h2>
+      
+      {error && <div className="alert alert-error">{error}</div>}
+
+      <form onSubmit={handleSubmit}>
+        <div className="grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div className="form-group">
+            <label>Category</label>
+            <select name="category" className="form-control" value={formData.category} onChange={handleFormChange}>
+              <option value="mech">Mechanical</option>
+              <option value="non-mech">Non-Mechanical</option>
+            </select>
+          </div>
+          
+          <div className="form-group">
+            <label>Team Name</label>
+            <input type="text" name="team_name" className="form-control" required value={formData.team_name} onChange={handleFormChange} />
+          </div>
+
+          <div className="form-group">
+            <label>Team Leader Name</label>
+            <input type="text" name="team_leader" className="form-control" required value={formData.team_leader} onChange={handleFormChange} />
+          </div>
+
+          <div className="form-group">
+            <label>Leader Reg No</label>
+            <input type="text" name="reg_no" className="form-control" required value={formData.reg_no} onChange={handleFormChange} />
+          </div>
+        </div>
+
+        <div className="mt-4 mb-4" style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1.5rem' }}>
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="mono text-gold">TEAMMATES</h3>
+            {teammates.length < 4 && (
+              <button type="button" className="btn btn-gold" style={{ padding: '0.25rem 0.75rem', fontSize: '1.2rem' }} onClick={addTeammate}>+</button>
+            )}
+          </div>
+          <p className="text-secondary mb-4" style={{ fontSize: '0.8rem' }}>A team must have 3 to 5 members in total (including leader).</p>
+
+          {teammates.map((teammate, idx) => (
+            <div key={idx} className="flex gap-2 mb-2 items-center" style={{ flexWrap: 'wrap' }}>
+              <input type="text" placeholder={`Teammate ${idx + 1} Name`} className="form-control" style={{ flex: '1', minWidth: '200px' }} value={teammate.name} onChange={(e) => handleTeammateChange(idx, 'name', e.target.value)} />
+              <input type="text" placeholder="Reg No" className="form-control" style={{ width: '150px' }} value={teammate.reg_no} onChange={(e) => handleTeammateChange(idx, 'reg_no', e.target.value)} />
+              <input type="text" placeholder="School (e.g. SITE, SMEC)" className="form-control" style={{ width: '180px' }} value={teammate.school} onChange={(e) => handleTeammateChange(idx, 'school', e.target.value)} />
+              {teammates.length > 2 && (
+                <button type="button" className="btn" style={{ borderColor: '#ff3232', color: '#ff3232', padding: '0.5rem 1rem' }} onClick={() => removeTeammate(idx)}>X</button>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="text-center mt-4">
+          <button type="submit" className="btn btn-gold" disabled={loading} style={{ width: '100%' }}>
+            {loading ? 'REGISTERING...' : 'REGISTER TEAM'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+export default Register;

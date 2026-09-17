@@ -1,0 +1,257 @@
+import { useState, useEffect } from 'react';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
+function Admin() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState('');
+  const [settings, setSettings] = useState({ problem_statement: '', whatsapp_link: '' });
+  const [teams, setTeams] = useState([]);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const [imageFile, setImageFile] = useState(null);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    
+    try {
+      const res = await fetch(`${API_URL}/admin/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password })
+      });
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        setIsAuthenticated(true);
+        fetchDashboardData(password);
+      } else {
+        setError(data.error || 'Login failed');
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchDashboardData = async (pwd) => {
+    try {
+      const [settingsRes, teamsRes] = await Promise.all([
+        fetch(`${API_URL}/settings`),
+        fetch(`${API_URL}/teams?password=${pwd}`)
+      ]);
+      
+      if (settingsRes.ok) setSettings(await settingsRes.json());
+      if (teamsRes.ok) setTeams(await teamsRes.json());
+    } catch (err) {
+      console.error("Failed to fetch dashboard data", err);
+    }
+  };
+
+  const handleSaveSettings = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      const formData = new FormData();
+      formData.append('password', password);
+      formData.append('whatsapp_link', settings.whatsapp_link || '');
+      formData.append('problem_statement', settings.problem_statement || '');
+      
+      if (imageFile) {
+        formData.append('image', imageFile);
+      }
+
+      const res = await fetch(`${API_URL}/settings`, {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (res.ok) {
+        alert('Settings saved successfully!');
+        setImageFile(null);
+      } else {
+        const data = await res.json();
+        alert(`Error: ${data.error}`);
+      }
+    } catch (err) {
+      alert(`Error: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const exportToCSV = () => {
+    if (teams.length === 0) {
+      alert("No teams to export");
+      return;
+    }
+
+    // Define CSV Headers
+    const headers = [
+      "Team ID", "Category", "Team Name", "Leader Name", "Leader Reg No",
+      "M2 Name", "M2 Reg No", "M2 School",
+      "M3 Name", "M3 Reg No", "M3 School",
+      "M4 Name", "M4 Reg No", "M4 School",
+      "M5 Name", "M5 Reg No", "M5 School"
+    ];
+
+    const csvRows = [];
+    csvRows.push(headers.join(','));
+
+    // Process each team
+    teams.forEach(team => {
+      const row = [
+        team.id,
+        team.category,
+        `"${team.team_name.replace(/"/g, '""')}"`,
+        `"${team.team_leader.replace(/"/g, '""')}"`,
+        `"${team.reg_no.replace(/"/g, '""')}"`
+      ];
+
+      // Add up to 4 teammates
+      for (let i = 0; i < 4; i++) {
+        if (team.teammates[i]) {
+          row.push(`"${team.teammates[i].name.replace(/"/g, '""')}"`);
+          row.push(`"${team.teammates[i].reg_no.replace(/"/g, '""')}"`);
+          row.push(`"${team.teammates[i].school.replace(/"/g, '""')}"`);
+        } else {
+          row.push('', '', ''); // Empty columns if member doesn't exist
+        }
+      }
+
+      csvRows.push(row.join(','));
+    });
+
+    const csvData = csvRows.join('\n');
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.setAttribute('hidden', '');
+    a.setAttribute('href', url);
+    a.setAttribute('download', 'hackathon_teams.csv');
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="card" style={{ maxWidth: '400px', margin: '4rem auto' }}>
+        <h2 className="mb-4 mono text-center">ADMIN SYSTEM</h2>
+        {error && <div className="alert alert-error">{error}</div>}
+        <form onSubmit={handleLogin}>
+          <div className="form-group">
+            <label>Admin Password</label>
+            <input 
+              type="password" 
+              className="form-control" 
+              value={password} 
+              onChange={e => setPassword(e.target.value)} 
+              required 
+            />
+          </div>
+          <button type="submit" className="btn btn-gold" style={{ width: '100%' }} disabled={loading}>
+            {loading ? 'AUTHENTICATING...' : 'LOGIN'}
+          </button>
+        </form>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ padding: '2rem 0' }}>
+      <h2 className="mb-4 mono">ADMIN DASHBOARD</h2>
+      
+      <div className="grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+        <div className="card">
+          <h3 className="mono text-gold mb-4">SYSTEM SETTINGS</h3>
+          <form onSubmit={handleSaveSettings}>
+            <div className="form-group">
+              <label>WhatsApp Group Link</label>
+              <input 
+                type="url" 
+                className="form-control" 
+                value={settings.whatsapp_link}
+                onChange={e => setSettings({...settings, whatsapp_link: e.target.value})}
+                placeholder="https://chat.whatsapp.com/..."
+              />
+              <small className="text-secondary" style={{display: 'block', marginTop: '0.5rem'}}>Users will be redirected to this link when they click the Join button.</small>
+            </div>
+            
+            <div className="form-group">
+              <label>Problem Statement (Leave blank to hide)</label>
+              <textarea 
+                className="form-control" 
+                rows="6"
+                value={settings.problem_statement}
+                onChange={e => setSettings({...settings, problem_statement: e.target.value})}
+                placeholder="Enter the problem statement here..."
+              ></textarea>
+            </div>
+            
+            <div className="form-group">
+              <label>Problem Statement Image</label>
+              <input 
+                type="file" 
+                accept="image/*"
+                className="form-control" 
+                onChange={e => setImageFile(e.target.files[0])}
+              />
+              {settings.problem_statement_image && (
+                <div style={{ marginTop: '0.5rem' }}>
+                  <small className="text-secondary">Current Image:</small><br/>
+                  <img src={settings.problem_statement_image.startsWith('http') ? settings.problem_statement_image : `http://localhost:3000${settings.problem_statement_image}`} alt="Current" style={{ maxWidth: '100px', marginTop: '0.25rem', borderRadius: '4px' }} />
+                </div>
+              )}
+            </div>
+
+            <button type="submit" className="btn btn-gold" disabled={loading}>
+              {loading ? 'SAVING...' : 'SAVE SETTINGS'}
+            </button>
+          </form>
+        </div>
+        
+        <div className="card" style={{ overflowY: 'auto', maxHeight: '600px' }}>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="mono text-gold mb-0">REGISTERED TEAMS ({teams.length})</h3>
+            <button type="button" onClick={exportToCSV} className="btn" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}>
+              Export CSV
+            </button>
+          </div>
+          {teams.length === 0 ? (
+            <p className="text-secondary">No teams registered yet.</p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {teams.map(team => (
+                <div key={team.id} style={{ padding: '1rem', border: '1px solid var(--border-color)', borderRadius: '4px', background: 'rgba(0,0,0,0.3)' }}>
+                  <div className="flex justify-between items-center mb-2">
+                    <h4 className="text-gold">{team.team_name}</h4>
+                    <span className="mono text-secondary" style={{ fontSize: '0.8rem', textTransform: 'uppercase' }}>{team.category}</span>
+                  </div>
+                  <p className="mb-1" style={{ fontSize: '0.9rem' }}><strong>Leader:</strong> {team.team_leader} ({team.reg_no})</p>
+                  <div style={{ fontSize: '0.85rem' }}>
+                    <strong className="text-secondary">Teammates:</strong>
+                    <ul style={{ listStyle: 'none', paddingLeft: '1rem', marginTop: '0.25rem' }}>
+                      {team.teammates.map((member, i) => (
+                        <li key={i}>- {member.name} ({member.reg_no}) - {member.school}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default Admin;
