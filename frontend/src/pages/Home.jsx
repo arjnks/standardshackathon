@@ -38,7 +38,7 @@ function Home() {
           </div>
           <div className="card" style={{ padding: '1rem', minWidth: '200px' }}>
             <h4 className="text-gold mono mb-1" style={{ fontSize: '0.8rem' }}>VENUE</h4>
-            <p className="text-primary" style={{ fontSize: '0.9rem' }}>CDMM 303<br/>VIT Vellore</p>
+            <p className="text-primary" style={{ fontSize: '0.9rem' }}>MGB 108<br/>VIT Vellore</p>
           </div>
         </div>
         <div className="flex gap-4 justify-center">
