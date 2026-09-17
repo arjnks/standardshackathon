@@ -49,57 +49,118 @@ function Home() {
         </div>
       </section>
 
-      {settings.problem_statement_visible === 'true' && (settings.problem_statement || settings.problem_statement_image || settings.constraints_file) && (
+      {settings.problem_statement_visible === 'true' && (
         <section className="mb-4" style={{ marginTop: '3rem' }}>
-          <div className="card" style={{ border: '1px solid var(--accent-gold)' }}>
-            <h2 className="text-gold mb-4 mono text-center">_PROBLEM STATEMENT RELEASED</h2>
+          <h2 className="text-gold mb-4 mono text-center">_PROBLEM STATEMENTS RELEASED</h2>
+          <div className="grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
             
-            {settings.problem_statement_image && (
-              <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
-                {settings.problem_statement_image.toLowerCase().endsWith('.pdf') || settings.problem_statement_image.includes('.pdf') ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
-                    <iframe 
-                      src={settings.problem_statement_image.startsWith('http') ? settings.problem_statement_image : `http://localhost:3000${settings.problem_statement_image}`} 
-                      style={{ width: '100%', height: '500px', border: '1px solid var(--border-color)', borderRadius: '8px' }}
-                      title="Problem Statement PDF"
-                    />
+            {/* MECHANICAL CARD */}
+            {(settings.mech_problem_statement || settings.mech_ps_file || settings.mech_constraints) && (
+              <div className="card" style={{ border: '1px solid var(--accent-gold)' }}>
+                <h3 className="text-gold mb-4 mono text-center">MECHANICAL TRACK</h3>
+                
+                {settings.mech_ps_file && (
+                  <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
+                    {settings.mech_ps_file.toLowerCase().endsWith('.pdf') || settings.mech_ps_file.includes('.pdf') ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
+                        <iframe 
+                          src={settings.mech_ps_file.startsWith('http') ? settings.mech_ps_file : `http://localhost:3000${settings.mech_ps_file}`} 
+                          style={{ width: '100%', height: '500px', border: '1px solid var(--border-color)', borderRadius: '8px' }}
+                          title="Mechanical Problem Statement PDF"
+                        />
+                        <a 
+                          href={settings.mech_ps_file.startsWith('http') ? settings.mech_ps_file : `http://localhost:3000${settings.mech_ps_file}`} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="btn btn-gold"
+                        >
+                          Open Problem Statement PDF
+                        </a>
+                      </div>
+                    ) : (
+                      <img 
+                        src={settings.mech_ps_file.startsWith('http') ? settings.mech_ps_file : `http://localhost:3000${settings.mech_ps_file}`} 
+                        alt="Mechanical Problem Statement" 
+                        style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px', border: '1px solid var(--border-color)' }}
+                      />
+                    )}
+                  </div>
+                )}
+                
+                {settings.mech_problem_statement && (
+                  <div style={{ whiteSpace: 'pre-wrap', color: 'var(--text-primary)', marginBottom: '1.5rem' }}>
+                    {settings.mech_problem_statement}
+                  </div>
+                )}
+
+                {settings.mech_constraints && (
+                  <div style={{ marginTop: '2rem', paddingTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>
+                    <h4 className="text-gold mb-3 mono">CONSTRAINTS</h4>
                     <a 
-                      href={settings.problem_statement_image.startsWith('http') ? settings.problem_statement_image : `http://localhost:3000${settings.problem_statement_image}`} 
+                      href={settings.mech_constraints.startsWith('http') ? settings.mech_constraints : `http://localhost:3000${settings.mech_constraints}`} 
                       target="_blank" 
                       rel="noopener noreferrer" 
-                      className="btn btn-gold"
+                      className="btn"
                     >
-                      Open Problem Statement PDF
+                      Download Constraints PDF
                     </a>
                   </div>
-                ) : (
-                  <img 
-                    src={settings.problem_statement_image.startsWith('http') ? settings.problem_statement_image : `http://localhost:3000${settings.problem_statement_image}`} 
-                    alt="Problem Statement" 
-                    style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px', border: '1px solid var(--border-color)' }}
-                  />
                 )}
               </div>
             )}
-            
-            {settings.problem_statement && (
-              <div style={{ whiteSpace: 'pre-wrap', color: 'var(--text-primary)', marginBottom: '1.5rem' }}>
-                {settings.problem_statement}
-              </div>
-            )}
 
-            {settings.constraints_file && (
-              <div style={{ marginTop: '2rem', paddingTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>
-                <h3 className="text-gold mb-3 mono">HACKATHON CONSTRAINTS</h3>
-                <p className="text-secondary mb-3">Please review the specific constraints and standards required for your solution.</p>
-                <a 
-                  href={settings.constraints_file.startsWith('http') ? settings.constraints_file : `http://localhost:3000${settings.constraints_file}`} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="btn"
-                >
-                  Download Constraints PDF
-                </a>
+            {/* MULTI-DISCIPLINARY CARD */}
+            {(settings.multi_problem_statement || settings.multi_ps_file || settings.multi_constraints) && (
+              <div className="card" style={{ border: '1px solid var(--accent-gold)' }}>
+                <h3 className="text-gold mb-4 mono text-center">MULTI-DISCIPLINARY TRACK</h3>
+                
+                {settings.multi_ps_file && (
+                  <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
+                    {settings.multi_ps_file.toLowerCase().endsWith('.pdf') || settings.multi_ps_file.includes('.pdf') ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
+                        <iframe 
+                          src={settings.multi_ps_file.startsWith('http') ? settings.multi_ps_file : `http://localhost:3000${settings.multi_ps_file}`} 
+                          style={{ width: '100%', height: '500px', border: '1px solid var(--border-color)', borderRadius: '8px' }}
+                          title="Multi-Disciplinary Problem Statement PDF"
+                        />
+                        <a 
+                          href={settings.multi_ps_file.startsWith('http') ? settings.multi_ps_file : `http://localhost:3000${settings.multi_ps_file}`} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="btn btn-gold"
+                        >
+                          Open Problem Statement PDF
+                        </a>
+                      </div>
+                    ) : (
+                      <img 
+                        src={settings.multi_ps_file.startsWith('http') ? settings.multi_ps_file : `http://localhost:3000${settings.multi_ps_file}`} 
+                        alt="Multi-Disciplinary Problem Statement" 
+                        style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px', border: '1px solid var(--border-color)' }}
+                      />
+                    )}
+                  </div>
+                )}
+                
+                {settings.multi_problem_statement && (
+                  <div style={{ whiteSpace: 'pre-wrap', color: 'var(--text-primary)', marginBottom: '1.5rem' }}>
+                    {settings.multi_problem_statement}
+                  </div>
+                )}
+
+                {settings.multi_constraints && (
+                  <div style={{ marginTop: '2rem', paddingTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>
+                    <h4 className="text-gold mb-3 mono">CONSTRAINTS</h4>
+                    <a 
+                      href={settings.multi_constraints.startsWith('http') ? settings.multi_constraints : `http://localhost:3000${settings.multi_constraints}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="btn"
+                    >
+                      Download Constraints PDF
+                    </a>
+                  </div>
+                )}
               </div>
             )}
           </div>

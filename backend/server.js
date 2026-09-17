@@ -42,47 +42,48 @@ app.get('/api/settings', async (req, res) => {
 });
 
 // API to update settings (Admin)
-app.post('/api/settings', upload.fields([{ name: 'image', maxCount: 1 }, { name: 'constraints', maxCount: 1 }]), async (req, res) => {
-  const { password, problem_statement, problem_statement_visible, whatsapp_link } = req.body;
+app.post('/api/settings', upload.fields([
+  { name: 'mech_ps_file', maxCount: 1 }, 
+  { name: 'mech_constraints', maxCount: 1 },
+  { name: 'multi_ps_file', maxCount: 1 },
+  { name: 'multi_constraints', maxCount: 1 }
+]), async (req, res) => {
+  const { password, mech_problem_statement, multi_problem_statement, problem_statement_visible, whatsapp_link } = req.body;
   
   if (password !== 'admin123') {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
   try {
-    if (problem_statement !== undefined) {
-      await supabase.from('settings').upsert({ key: 'problem_statement', value: problem_statement });
+    if (mech_problem_statement !== undefined) {
+      await supabase.from('settings').upsert({ key: 'mech_problem_statement', value: mech_problem_statement });
+    }
+    if (multi_problem_statement !== undefined) {
+      await supabase.from('settings').upsert({ key: 'multi_problem_statement', value: multi_problem_statement });
     }
     if (problem_statement_visible !== undefined) {
       await supabase.from('settings').upsert({ key: 'problem_statement_visible', value: problem_statement_visible });
     }
-    
     if (whatsapp_link !== undefined) {
       await supabase.from('settings').upsert({ key: 'whatsapp_link', value: whatsapp_link });
     }
     
     if (req.files) {
-      if (req.files.image) {
-        const file = req.files.image[0];
-        const fileName = `${uuidv4()}_${file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-        
-        const { error } = await supabase.storage.from('fusion').upload(fileName, file.buffer, { contentType: file.mimetype, upsert: true });
-        if (error) throw error;
-        
-        const { data: publicUrlData } = supabase.storage.from('fusion').getPublicUrl(fileName);
-        await supabase.from('settings').upsert({ key: 'problem_statement_image', value: publicUrlData.publicUrl });
-      }
+      const handleUpload = async (fileArray, keyName) => {
+        if (fileArray && fileArray[0]) {
+          const file = fileArray[0];
+          const fileName = `${keyName}_${uuidv4()}_${file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+          const { error } = await supabase.storage.from('fusion').upload(fileName, file.buffer, { contentType: file.mimetype, upsert: true });
+          if (error) throw error;
+          const { data: publicUrlData } = supabase.storage.from('fusion').getPublicUrl(fileName);
+          await supabase.from('settings').upsert({ key: keyName, value: publicUrlData.publicUrl });
+        }
+      };
 
-      if (req.files.constraints) {
-        const file = req.files.constraints[0];
-        const fileName = `constraints_${uuidv4()}_${file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-        
-        const { error } = await supabase.storage.from('fusion').upload(fileName, file.buffer, { contentType: file.mimetype, upsert: true });
-        if (error) throw error;
-        
-        const { data: publicUrlData } = supabase.storage.from('fusion').getPublicUrl(fileName);
-        await supabase.from('settings').upsert({ key: 'constraints_file', value: publicUrlData.publicUrl });
-      }
+      await handleUpload(req.files.mech_ps_file, 'mech_ps_file');
+      await handleUpload(req.files.mech_constraints, 'mech_constraints');
+      await handleUpload(req.files.multi_ps_file, 'multi_ps_file');
+      await handleUpload(req.files.multi_constraints, 'multi_constraints');
     }
     
     res.json({ message: 'Settings updated successfully' });

@@ -5,13 +5,24 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 function Admin() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
-  const [settings, setSettings] = useState({ problem_statement: '', whatsapp_link: '', problem_statement_visible: 'false', problem_statement_image: '', constraints_file: '' });
+  const [settings, setSettings] = useState({ 
+    mech_problem_statement: '', 
+    multi_problem_statement: '', 
+    whatsapp_link: '', 
+    problem_statement_visible: 'false', 
+    mech_ps_file: '', 
+    mech_constraints: '', 
+    multi_ps_file: '', 
+    multi_constraints: '' 
+  });
   const [teams, setTeams] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const [imageFile, setImageFile] = useState(null);
-  const [constraintsFile, setConstraintsFile] = useState(null);
+  const [mechPsFile, setMechPsFile] = useState(null);
+  const [mechConstraintsFile, setMechConstraintsFile] = useState(null);
+  const [multiPsFile, setMultiPsFile] = useState(null);
+  const [multiConstraintsFile, setMultiConstraintsFile] = useState(null);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -62,16 +73,14 @@ function Admin() {
       const formData = new FormData();
       formData.append('password', password);
       formData.append('whatsapp_link', settings.whatsapp_link || '');
-      formData.append('problem_statement', settings.problem_statement || '');
+      formData.append('mech_problem_statement', settings.mech_problem_statement || '');
+      formData.append('multi_problem_statement', settings.multi_problem_statement || '');
       formData.append('problem_statement_visible', settings.problem_statement_visible === 'true' ? 'true' : 'false');
       
-      if (imageFile) {
-        formData.append('image', imageFile);
-      }
-      
-      if (constraintsFile) {
-        formData.append('constraints', constraintsFile);
-      }
+      if (mechPsFile) formData.append('mech_ps_file', mechPsFile);
+      if (mechConstraintsFile) formData.append('mech_constraints', mechConstraintsFile);
+      if (multiPsFile) formData.append('multi_ps_file', multiPsFile);
+      if (multiConstraintsFile) formData.append('multi_constraints', multiConstraintsFile);
 
       const res = await fetch(`${API_URL}/settings`, {
         method: 'POST',
@@ -180,30 +189,7 @@ function Admin() {
         <div className="card">
           <h3 className="mono text-gold mb-4">SYSTEM SETTINGS</h3>
           <form onSubmit={handleSaveSettings}>
-            <div className="form-group">
-              <label>WhatsApp Group Link</label>
-              <input 
-                type="url" 
-                className="form-control" 
-                value={settings.whatsapp_link}
-                onChange={e => setSettings({...settings, whatsapp_link: e.target.value})}
-                placeholder="https://chat.whatsapp.com/..."
-              />
-              <small className="text-secondary" style={{display: 'block', marginTop: '0.5rem'}}>Users will be redirected to this link when they click the Join button.</small>
-            </div>
-            
-            <div className="form-group">
-              <label>Problem Statement (Leave blank to hide)</label>
-              <textarea 
-                className="form-control" 
-                rows="6"
-                value={settings.problem_statement}
-                onChange={e => setSettings({...settings, problem_statement: e.target.value})}
-                placeholder="Enter the problem statement here..."
-              ></textarea>
-            </div>
-            
-            <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+            <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem' }}>
               <input 
                 type="checkbox" 
                 id="ps_visible"
@@ -211,39 +197,80 @@ function Admin() {
                 onChange={e => setSettings({...settings, problem_statement_visible: e.target.checked ? 'true' : 'false'})}
                 style={{ width: '18px', height: '18px' }}
               />
-              <label htmlFor="ps_visible" style={{ marginBottom: 0, cursor: 'pointer' }}>Make Problem Statement Visible to Public</label>
+              <label htmlFor="ps_visible" style={{ marginBottom: 0, cursor: 'pointer', color: 'var(--accent-gold)' }}>Make Problem Statements Visible to Public</label>
+            </div>
+
+            <h4 className="mono mb-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>MECHANICAL CATEGORY</h4>
+            
+            <div className="form-group">
+              <label>Problem Statement Description</label>
+              <textarea 
+                className="form-control" rows="4"
+                value={settings.mech_problem_statement || ''}
+                onChange={e => setSettings({...settings, mech_problem_statement: e.target.value})}
+              ></textarea>
             </div>
             
             <div className="form-group">
               <label>Problem Statement File (Image or PDF)</label>
-              <input 
-                type="file" 
-                accept="image/*,.pdf"
-                className="form-control" 
-                onChange={e => setImageFile(e.target.files[0])}
-              />
-              {settings.problem_statement_image && (
+              <input type="file" accept="image/*,.pdf" className="form-control" onChange={e => setMechPsFile(e.target.files[0])} />
+              {settings.mech_ps_file && (
                 <div style={{ marginTop: '0.5rem' }}>
-                  <small className="text-secondary">Current File:</small><br/>
-                  <a href={settings.problem_statement_image.startsWith('http') ? settings.problem_statement_image : `http://localhost:3000${settings.problem_statement_image}`} target="_blank" rel="noopener noreferrer" className="text-gold">View Current File</a>
+                  <a href={settings.mech_ps_file.startsWith('http') ? settings.mech_ps_file : `http://localhost:3000${settings.mech_ps_file}`} target="_blank" rel="noopener noreferrer" className="text-gold" style={{ fontSize: '0.8rem' }}>View Current File</a>
                 </div>
               )}
             </div>
 
-            <div className="form-group">
+            <div className="form-group mb-4">
               <label>Constraints File (PDF)</label>
-              <input 
-                type="file" 
-                accept=".pdf"
-                className="form-control" 
-                onChange={e => setConstraintsFile(e.target.files[0])}
-              />
-              {settings.constraints_file && (
+              <input type="file" accept=".pdf" className="form-control" onChange={e => setMechConstraintsFile(e.target.files[0])} />
+              {settings.mech_constraints && (
                 <div style={{ marginTop: '0.5rem' }}>
-                  <small className="text-secondary">Current Constraints:</small><br/>
-                  <a href={settings.constraints_file.startsWith('http') ? settings.constraints_file : `http://localhost:3000${settings.constraints_file}`} target="_blank" rel="noopener noreferrer" className="text-gold">View Constraints PDF</a>
+                  <a href={settings.mech_constraints.startsWith('http') ? settings.mech_constraints : `http://localhost:3000${settings.mech_constraints}`} target="_blank" rel="noopener noreferrer" className="text-gold" style={{ fontSize: '0.8rem' }}>View Current Constraints</a>
                 </div>
               )}
+            </div>
+
+            <h4 className="mono mb-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>MULTI-DISCIPLINARY CATEGORY</h4>
+            
+            <div className="form-group">
+              <label>Problem Statement Description</label>
+              <textarea 
+                className="form-control" rows="4"
+                value={settings.multi_problem_statement || ''}
+                onChange={e => setSettings({...settings, multi_problem_statement: e.target.value})}
+              ></textarea>
+            </div>
+            
+            <div className="form-group">
+              <label>Problem Statement File (Image or PDF)</label>
+              <input type="file" accept="image/*,.pdf" className="form-control" onChange={e => setMultiPsFile(e.target.files[0])} />
+              {settings.multi_ps_file && (
+                <div style={{ marginTop: '0.5rem' }}>
+                  <a href={settings.multi_ps_file.startsWith('http') ? settings.multi_ps_file : `http://localhost:3000${settings.multi_ps_file}`} target="_blank" rel="noopener noreferrer" className="text-gold" style={{ fontSize: '0.8rem' }}>View Current File</a>
+                </div>
+              )}
+            </div>
+
+            <div className="form-group mb-4">
+              <label>Constraints File (PDF)</label>
+              <input type="file" accept=".pdf" className="form-control" onChange={e => setMultiConstraintsFile(e.target.files[0])} />
+              {settings.multi_constraints && (
+                <div style={{ marginTop: '0.5rem' }}>
+                  <a href={settings.multi_constraints.startsWith('http') ? settings.multi_constraints : `http://localhost:3000${settings.multi_constraints}`} target="_blank" rel="noopener noreferrer" className="text-gold" style={{ fontSize: '0.8rem' }}>View Current Constraints</a>
+                </div>
+              )}
+            </div>
+            
+            <h4 className="mono mb-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>GENERAL</h4>
+            <div className="form-group">
+              <label>WhatsApp Group Link</label>
+              <input 
+                type="url" 
+                className="form-control" 
+                value={settings.whatsapp_link || ''}
+                onChange={e => setSettings({...settings, whatsapp_link: e.target.value})}
+              />
             </div>
 
             <button type="submit" className="btn btn-gold" disabled={loading}>
