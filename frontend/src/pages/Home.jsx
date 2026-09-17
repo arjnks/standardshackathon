@@ -56,11 +56,29 @@ function Home() {
             
             {settings.problem_statement_image && (
               <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
-                <img 
-                  src={settings.problem_statement_image.startsWith('http') ? settings.problem_statement_image : `http://localhost:3000${settings.problem_statement_image}`} 
-                  alt="Problem Statement" 
-                  style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px', border: '1px solid var(--border-color)' }}
-                />
+                {settings.problem_statement_image.toLowerCase().endsWith('.pdf') || settings.problem_statement_image.includes('.pdf') ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
+                    <iframe 
+                      src={settings.problem_statement_image.startsWith('http') ? settings.problem_statement_image : `http://localhost:3000${settings.problem_statement_image}`} 
+                      style={{ width: '100%', height: '500px', border: '1px solid var(--border-color)', borderRadius: '8px' }}
+                      title="Problem Statement PDF"
+                    />
+                    <a 
+                      href={settings.problem_statement_image.startsWith('http') ? settings.problem_statement_image : `http://localhost:3000${settings.problem_statement_image}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="btn btn-gold"
+                    >
+                      Open PDF in New Tab
+                    </a>
+                  </div>
+                ) : (
+                  <img 
+                    src={settings.problem_statement_image.startsWith('http') ? settings.problem_statement_image : `http://localhost:3000${settings.problem_statement_image}`} 
+                    alt="Problem Statement" 
+                    style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px', border: '1px solid var(--border-color)' }}
+                  />
+                )}
               </div>
             )}
             

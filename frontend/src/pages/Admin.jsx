@@ -197,17 +197,17 @@ function Admin() {
             </div>
             
             <div className="form-group">
-              <label>Problem Statement Image</label>
+              <label>Problem Statement File (Image or PDF)</label>
               <input 
                 type="file" 
-                accept="image/*"
+                accept="image/*,.pdf"
                 className="form-control" 
                 onChange={e => setImageFile(e.target.files[0])}
               />
               {settings.problem_statement_image && (
                 <div style={{ marginTop: '0.5rem' }}>
-                  <small className="text-secondary">Current Image:</small><br/>
-                  <img src={settings.problem_statement_image.startsWith('http') ? settings.problem_statement_image : `http://localhost:3000${settings.problem_statement_image}`} alt="Current" style={{ maxWidth: '100px', marginTop: '0.25rem', borderRadius: '4px' }} />
+                  <small className="text-secondary">Current File:</small><br/>
+                  <a href={settings.problem_statement_image.startsWith('http') ? settings.problem_statement_image : `http://localhost:3000${settings.problem_statement_image}`} target="_blank" rel="noopener noreferrer" className="text-gold">View Current File</a>
                 </div>
               )}
             </div>
