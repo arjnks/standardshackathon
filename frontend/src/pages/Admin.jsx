@@ -89,7 +89,10 @@ function Admin() {
       
       if (res.ok) {
         alert('Settings saved successfully!');
-        setImageFile(null);
+        setMechPsFile(null);
+        setMechConstraintsFile(null);
+        setMultiPsFile(null);
+        setMultiConstraintsFile(null);
       } else {
         const data = await res.json();
         alert(`Error: ${data.error}`);
