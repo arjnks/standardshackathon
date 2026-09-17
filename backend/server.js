@@ -42,8 +42,8 @@ app.get('/api/settings', async (req, res) => {
 });
 
 // API to update settings (Admin)
-app.post('/api/settings', upload.single('image'), async (req, res) => {
-  const { password, problem_statement, whatsapp_link } = req.body;
+app.post('/api/settings', upload.fields([{ name: 'image', maxCount: 1 }, { name: 'constraints', maxCount: 1 }]), async (req, res) => {
+  const { password, problem_statement, problem_statement_visible, whatsapp_link } = req.body;
   
   if (password !== 'admin123') {
     return res.status(401).json({ error: 'Unauthorized' });
@@ -53,31 +53,36 @@ app.post('/api/settings', upload.single('image'), async (req, res) => {
     if (problem_statement !== undefined) {
       await supabase.from('settings').upsert({ key: 'problem_statement', value: problem_statement });
     }
+    if (problem_statement_visible !== undefined) {
+      await supabase.from('settings').upsert({ key: 'problem_statement_visible', value: problem_statement_visible });
+    }
     
     if (whatsapp_link !== undefined) {
       await supabase.from('settings').upsert({ key: 'whatsapp_link', value: whatsapp_link });
     }
     
-    if (req.file) {
-      const fileName = `${uuidv4()}_${req.file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-      
-      const { data, error } = await supabase.storage
-        .from('fusion')
-        .upload(fileName, req.file.buffer, {
-          contentType: req.file.mimetype,
-          upsert: true
-        });
-
-      if (error) throw error;
-
-      // Get public URL
-      const { data: publicUrlData } = supabase.storage
-        .from('fusion')
-        .getPublicUrl(fileName);
+    if (req.files) {
+      if (req.files.image) {
+        const file = req.files.image[0];
+        const fileName = `${uuidv4()}_${file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
         
-      const publicUrl = publicUrlData.publicUrl;
+        const { error } = await supabase.storage.from('fusion').upload(fileName, file.buffer, { contentType: file.mimetype, upsert: true });
+        if (error) throw error;
         
-      await supabase.from('settings').upsert({ key: 'problem_statement_image', value: publicUrl });
+        const { data: publicUrlData } = supabase.storage.from('fusion').getPublicUrl(fileName);
+        await supabase.from('settings').upsert({ key: 'problem_statement_image', value: publicUrlData.publicUrl });
+      }
+
+      if (req.files.constraints) {
+        const file = req.files.constraints[0];
+        const fileName = `constraints_${uuidv4()}_${file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+        
+        const { error } = await supabase.storage.from('fusion').upload(fileName, file.buffer, { contentType: file.mimetype, upsert: true });
+        if (error) throw error;
+        
+        const { data: publicUrlData } = supabase.storage.from('fusion').getPublicUrl(fileName);
+        await supabase.from('settings').upsert({ key: 'constraints_file', value: publicUrlData.publicUrl });
+      }
     }
     
     res.json({ message: 'Settings updated successfully' });
@@ -104,10 +109,11 @@ app.post('/api/teams', async (req, res) => {
       .from('teams')
       .insert([
         {
-          category: teamData.category,
           team_name: teamData.team_name,
-          team_leader: teamData.team_leader,
-          reg_no: teamData.reg_no,
+          leader_name: teamData.leader_name,
+          leader_email: teamData.leader_email,
+          leader_phone: teamData.leader_phone,
+          branch: teamData.branch,
           teammates: teamData.teammates
         }
       ])

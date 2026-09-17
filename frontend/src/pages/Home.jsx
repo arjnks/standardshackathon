@@ -49,10 +49,10 @@ function Home() {
         </div>
       </section>
 
-      {(settings.problem_statement || settings.problem_statement_image) && (
+      {settings.problem_statement_visible === 'true' && (settings.problem_statement || settings.problem_statement_image || settings.constraints_file) && (
         <section className="mb-4" style={{ marginTop: '3rem' }}>
           <div className="card" style={{ border: '1px solid var(--accent-gold)' }}>
-            <h2 className="text-gold mb-2 mono">_PROBLEM STATEMENT RELEASED</h2>
+            <h2 className="text-gold mb-4 mono text-center">_PROBLEM STATEMENT RELEASED</h2>
             
             {settings.problem_statement_image && (
               <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
@@ -69,7 +69,7 @@ function Home() {
                       rel="noopener noreferrer" 
                       className="btn btn-gold"
                     >
-                      Open PDF in New Tab
+                      Open Problem Statement PDF
                     </a>
                   </div>
                 ) : (
@@ -83,8 +83,23 @@ function Home() {
             )}
             
             {settings.problem_statement && (
-              <div style={{ whiteSpace: 'pre-wrap', color: 'var(--text-primary)' }}>
+              <div style={{ whiteSpace: 'pre-wrap', color: 'var(--text-primary)', marginBottom: '1.5rem' }}>
                 {settings.problem_statement}
+              </div>
+            )}
+
+            {settings.constraints_file && (
+              <div style={{ marginTop: '2rem', paddingTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>
+                <h3 className="text-gold mb-3 mono">HACKATHON CONSTRAINTS</h3>
+                <p className="text-secondary mb-3">Please review the specific constraints and standards required for your solution.</p>
+                <a 
+                  href={settings.constraints_file.startsWith('http') ? settings.constraints_file : `http://localhost:3000${settings.constraints_file}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="btn"
+                >
+                  Download Constraints PDF
+                </a>
               </div>
             )}
           </div>

@@ -5,12 +5,13 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 function Admin() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
-  const [settings, setSettings] = useState({ problem_statement: '', whatsapp_link: '' });
+  const [settings, setSettings] = useState({ problem_statement: '', whatsapp_link: '', problem_statement_visible: 'false', problem_statement_image: '', constraints_file: '' });
   const [teams, setTeams] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const [imageFile, setImageFile] = useState(null);
+  const [constraintsFile, setConstraintsFile] = useState(null);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -62,9 +63,14 @@ function Admin() {
       formData.append('password', password);
       formData.append('whatsapp_link', settings.whatsapp_link || '');
       formData.append('problem_statement', settings.problem_statement || '');
+      formData.append('problem_statement_visible', settings.problem_statement_visible === 'true' ? 'true' : 'false');
       
       if (imageFile) {
         formData.append('image', imageFile);
+      }
+      
+      if (constraintsFile) {
+        formData.append('constraints', constraintsFile);
       }
 
       const res = await fetch(`${API_URL}/settings`, {
@@ -94,11 +100,11 @@ function Admin() {
 
     // Define CSV Headers
     const headers = [
-      "Team ID", "Category", "Team Name", "Leader Name", "Leader Reg No",
-      "M2 Name", "M2 Reg No", "M2 School",
-      "M3 Name", "M3 Reg No", "M3 School",
-      "M4 Name", "M4 Reg No", "M4 School",
-      "M5 Name", "M5 Reg No", "M5 School"
+      "Team ID", "Team Name", "Branch", "Leader Name", "Leader Email", "Leader Phone",
+      "M2 Name", "M2 Reg No", "M2 Email",
+      "M3 Name", "M3 Reg No", "M3 Email",
+      "M4 Name", "M4 Reg No", "M4 Email",
+      "M5 Name", "M5 Reg No", "M5 Email"
     ];
 
     const csvRows = [];
@@ -108,18 +114,19 @@ function Admin() {
     teams.forEach(team => {
       const row = [
         team.id,
-        team.category,
         `"${team.team_name.replace(/"/g, '""')}"`,
-        `"${team.team_leader.replace(/"/g, '""')}"`,
-        `"${team.reg_no.replace(/"/g, '""')}"`
+        `"${team.branch.replace(/"/g, '""')}"`,
+        `"${team.leader_name.replace(/"/g, '""')}"`,
+        `"${team.leader_email.replace(/"/g, '""')}"`,
+        `"${team.leader_phone.replace(/"/g, '""')}"`
       ];
 
       // Add up to 4 teammates
       for (let i = 0; i < 4; i++) {
-        if (team.teammates[i]) {
+        if (team.teammates && team.teammates[i]) {
           row.push(`"${team.teammates[i].name.replace(/"/g, '""')}"`);
           row.push(`"${team.teammates[i].reg_no.replace(/"/g, '""')}"`);
-          row.push(`"${team.teammates[i].school.replace(/"/g, '""')}"`);
+          row.push(`"${team.teammates[i].email.replace(/"/g, '""')}"`);
         } else {
           row.push('', '', ''); // Empty columns if member doesn't exist
         }
@@ -196,6 +203,17 @@ function Admin() {
               ></textarea>
             </div>
             
+            <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+              <input 
+                type="checkbox" 
+                id="ps_visible"
+                checked={settings.problem_statement_visible === 'true'}
+                onChange={e => setSettings({...settings, problem_statement_visible: e.target.checked ? 'true' : 'false'})}
+                style={{ width: '18px', height: '18px' }}
+              />
+              <label htmlFor="ps_visible" style={{ marginBottom: 0, cursor: 'pointer' }}>Make Problem Statement Visible to Public</label>
+            </div>
+            
             <div className="form-group">
               <label>Problem Statement File (Image or PDF)</label>
               <input 
@@ -208,6 +226,22 @@ function Admin() {
                 <div style={{ marginTop: '0.5rem' }}>
                   <small className="text-secondary">Current File:</small><br/>
                   <a href={settings.problem_statement_image.startsWith('http') ? settings.problem_statement_image : `http://localhost:3000${settings.problem_statement_image}`} target="_blank" rel="noopener noreferrer" className="text-gold">View Current File</a>
+                </div>
+              )}
+            </div>
+
+            <div className="form-group">
+              <label>Constraints File (PDF)</label>
+              <input 
+                type="file" 
+                accept=".pdf"
+                className="form-control" 
+                onChange={e => setConstraintsFile(e.target.files[0])}
+              />
+              {settings.constraints_file && (
+                <div style={{ marginTop: '0.5rem' }}>
+                  <small className="text-secondary">Current Constraints:</small><br/>
+                  <a href={settings.constraints_file.startsWith('http') ? settings.constraints_file : `http://localhost:3000${settings.constraints_file}`} target="_blank" rel="noopener noreferrer" className="text-gold">View Constraints PDF</a>
                 </div>
               )}
             </div>
@@ -233,14 +267,17 @@ function Admin() {
                 <div key={team.id} style={{ padding: '1rem', border: '1px solid var(--border-color)', borderRadius: '4px', background: 'rgba(0,0,0,0.3)' }}>
                   <div className="flex justify-between items-center mb-2">
                     <h4 className="text-gold">{team.team_name}</h4>
-                    <span className="mono text-secondary" style={{ fontSize: '0.8rem', textTransform: 'uppercase' }}>{team.category}</span>
+                    <span className="mono text-secondary" style={{ fontSize: '0.8rem', textTransform: 'uppercase' }}>{team.branch}</span>
                   </div>
-                  <p className="mb-1" style={{ fontSize: '0.9rem' }}><strong>Leader:</strong> {team.team_leader} ({team.reg_no})</p>
+                  <p className="mb-1" style={{ fontSize: '0.9rem' }}>
+                    <strong>Leader:</strong> {team.leader_name} <br/>
+                    <span className="text-secondary">{team.leader_email} | {team.leader_phone}</span>
+                  </p>
                   <div style={{ fontSize: '0.85rem' }}>
                     <strong className="text-secondary">Teammates:</strong>
                     <ul style={{ listStyle: 'none', paddingLeft: '1rem', marginTop: '0.25rem' }}>
-                      {team.teammates.map((member, i) => (
-                        <li key={i}>- {member.name} ({member.reg_no}) - {member.school}</li>
+                      {team.teammates && team.teammates.map((member, i) => (
+                        <li key={i}>- {member.name} ({member.reg_no}) - {member.email}</li>
                       ))}
                     </ul>
                   </div>

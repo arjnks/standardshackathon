@@ -6,13 +6,14 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 function Register() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    category: 'mech',
     team_name: '',
-    team_leader: '',
-    reg_no: ''
+    leader_name: '',
+    leader_email: '',
+    leader_phone: '',
+    branch: ''
   });
   
-  const [teammates, setTeammates] = useState([{ name: '', reg_no: '', school: '' }, { name: '', reg_no: '', school: '' }]);
+  const [teammates, setTeammates] = useState([{ name: '', reg_no: '', email: '' }, { name: '', reg_no: '', email: '' }]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -28,7 +29,7 @@ function Register() {
 
   const addTeammate = () => {
     if (teammates.length < 4) { // Max 5 total members (1 leader + 4 teammates)
-      setTeammates([...teammates, { name: '', reg_no: '', school: '' }]);
+      setTeammates([...teammates, { name: '', reg_no: '', email: '' }]);
     }
   };
 
@@ -80,27 +81,29 @@ function Register() {
 
       <form onSubmit={handleSubmit}>
         <div className="grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-          <div className="form-group">
-            <label>Category</label>
-            <select name="category" className="form-control" value={formData.category} onChange={handleFormChange}>
-              <option value="mech">Mechanical</option>
-              <option value="non-mech">Non-Mechanical</option>
-            </select>
-          </div>
-          
-          <div className="form-group">
+          <div className="form-group" style={{ gridColumn: '1 / -1' }}>
             <label>Team Name</label>
             <input type="text" name="team_name" className="form-control" required value={formData.team_name} onChange={handleFormChange} />
           </div>
-
+          
           <div className="form-group">
             <label>Team Leader Name</label>
-            <input type="text" name="team_leader" className="form-control" required value={formData.team_leader} onChange={handleFormChange} />
+            <input type="text" name="leader_name" className="form-control" required value={formData.leader_name} onChange={handleFormChange} />
           </div>
 
           <div className="form-group">
-            <label>Leader Reg No</label>
-            <input type="text" name="reg_no" className="form-control" required value={formData.reg_no} onChange={handleFormChange} />
+            <label>Leader Email ID</label>
+            <input type="email" name="leader_email" className="form-control" required value={formData.leader_email} onChange={handleFormChange} />
+          </div>
+
+          <div className="form-group">
+            <label>Leader Phone Number</label>
+            <input type="tel" name="leader_phone" className="form-control" required value={formData.leader_phone} onChange={handleFormChange} />
+          </div>
+          
+          <div className="form-group">
+            <label>Branch / Program</label>
+            <input type="text" name="branch" className="form-control" placeholder="e.g. Mechanical, B.Tech CSE" required value={formData.branch} onChange={handleFormChange} />
           </div>
         </div>
 
@@ -115,9 +118,9 @@ function Register() {
 
           {teammates.map((teammate, idx) => (
             <div key={idx} className="flex gap-2 mb-2 items-center" style={{ flexWrap: 'wrap' }}>
-              <input type="text" placeholder={`Teammate ${idx + 1} Name`} className="form-control" style={{ flex: '1', minWidth: '200px' }} value={teammate.name} onChange={(e) => handleTeammateChange(idx, 'name', e.target.value)} />
-              <input type="text" placeholder="Reg No" className="form-control" style={{ width: '150px' }} value={teammate.reg_no} onChange={(e) => handleTeammateChange(idx, 'reg_no', e.target.value)} />
-              <input type="text" placeholder="School (e.g. SITE, SMEC)" className="form-control" style={{ width: '180px' }} value={teammate.school} onChange={(e) => handleTeammateChange(idx, 'school', e.target.value)} />
+              <input type="text" placeholder={`Teammate ${idx + 1} Name`} className="form-control" style={{ flex: '1', minWidth: '150px' }} value={teammate.name} onChange={(e) => handleTeammateChange(idx, 'name', e.target.value)} />
+              <input type="text" placeholder="Reg No" className="form-control" style={{ width: '120px' }} value={teammate.reg_no} onChange={(e) => handleTeammateChange(idx, 'reg_no', e.target.value)} />
+              <input type="email" placeholder="Email ID" className="form-control" style={{ width: '180px' }} value={teammate.email} onChange={(e) => handleTeammateChange(idx, 'email', e.target.value)} />
               {teammates.length > 2 && (
                 <button type="button" className="btn" style={{ borderColor: '#ff3232', color: '#ff3232', padding: '0.5rem 1rem' }} onClick={() => removeTeammate(idx)}>X</button>
               )}
