@@ -115,6 +115,7 @@ app.post('/api/teams', async (req, res) => {
           leader_email: teamData.leader_email,
           leader_phone: teamData.leader_phone,
           branch: teamData.branch,
+          problem_statement_selection: teamData.problem_statement_selection,
           teammates: teamData.teammates
         }
       ])

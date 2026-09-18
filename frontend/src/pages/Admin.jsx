@@ -112,7 +112,7 @@ function Admin() {
 
     // Define CSV Headers
     const headers = [
-      "Team ID", "Team Name", "Branch", "Leader Name", "Leader Email", "Leader Phone",
+      "Team ID", "Team Name", "Branch", "Problem Statement", "Leader Name", "Leader Email", "Leader Phone",
       "M2 Name", "M2 Reg No", "M2 Email",
       "M3 Name", "M3 Reg No", "M3 Email",
       "M4 Name", "M4 Reg No", "M4 Email",
@@ -128,6 +128,7 @@ function Admin() {
         team.id,
         `"${team.team_name.replace(/"/g, '""')}"`,
         `"${team.branch.replace(/"/g, '""')}"`,
+        `"${(team.problem_statement_selection || '').replace(/"/g, '""')}"`,
         `"${team.leader_name.replace(/"/g, '""')}"`,
         `"${team.leader_email.replace(/"/g, '""')}"`,
         `"${team.leader_phone.replace(/"/g, '""')}"`
@@ -297,7 +298,12 @@ function Admin() {
                 <div key={team.id} style={{ padding: '1rem', border: '1px solid var(--border-color)', borderRadius: '4px', background: 'rgba(0,0,0,0.3)' }}>
                   <div className="flex justify-between items-center mb-2">
                     <h4 className="text-gold">{team.team_name}</h4>
-                    <span className="mono text-secondary" style={{ fontSize: '0.8rem', textTransform: 'uppercase' }}>{team.branch}</span>
+                    <div style={{ textAlign: 'right' }}>
+                      <span className="mono text-secondary" style={{ fontSize: '0.8rem', textTransform: 'uppercase', display: 'block' }}>{team.branch}</span>
+                      {team.problem_statement_selection && (
+                        <span className="mono" style={{ fontSize: '0.75rem', color: 'var(--accent-gold)', display: 'block', marginTop: '2px' }}>{team.problem_statement_selection}</span>
+                      )}
+                    </div>
                   </div>
                   <p className="mb-1" style={{ fontSize: '0.9rem' }}>
                     <strong>Leader:</strong> {team.leader_name} <br/>

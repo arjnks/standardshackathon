@@ -10,7 +10,8 @@ function Register() {
     leader_name: '',
     leader_email: '',
     leader_phone: '',
-    branch: ''
+    branch: '',
+    problem_statement_selection: ''
   });
   
   const [teammates, setTeammates] = useState([{ name: '', reg_no: '', email: '' }, { name: '', reg_no: '', email: '' }]);
@@ -104,6 +105,24 @@ function Register() {
           <div className="form-group">
             <label>Branch / Program</label>
             <input type="text" name="branch" className="form-control" placeholder="e.g. Mechanical, B.Tech CSE" required value={formData.branch} onChange={handleFormChange} />
+          </div>
+
+          <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+            <label>Target Problem Statement</label>
+            <select name="problem_statement_selection" className="form-control" required value={formData.problem_statement_selection} onChange={handleFormChange}>
+              <option value="" disabled>Select your problem statement...</option>
+              <optgroup label="Mechanical Track">
+                <option value="Mechanical - 1">Mechanical - 1</option>
+                <option value="Mechanical - 2">Mechanical - 2</option>
+                <option value="Mechanical - 3">Mechanical - 3</option>
+                <option value="Mechanical - 4">Mechanical - 4</option>
+              </optgroup>
+              <optgroup label="Multi-Disciplinary Track">
+                <option value="Multi-Disciplinary - A">Multi-Disciplinary - A</option>
+                <option value="Multi-Disciplinary - B">Multi-Disciplinary - B</option>
+                <option value="Multi-Disciplinary - C">Multi-Disciplinary - C</option>
+              </optgroup>
+            </select>
           </div>
         </div>
 
