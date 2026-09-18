@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/club-logo.svg",
+      "destination": "/club-logo.svg"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
